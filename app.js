@@ -69,8 +69,9 @@ const addCard = (elements) => {
   title.innerText = `${elements.title}`;
   const name = document.createElement("span");
   name.innerText = `${elements.user.name}`;
+
   const tag = document.createElement("span");
-  tag.innerText = `${elements.tags.name}`;
+
   const likes = document.createElement("span");
   const likesImg = document.createElement("img");
   likesImg.src = "Vector.png";
@@ -78,7 +79,9 @@ const addCard = (elements) => {
   const likesValue = `${elements.likes_count}`;
   likes.append(likesImg, likesValue);
   const date = document.createElement("span");
-  date.innerText = `${elements.created_at}`;
+  // 年月日のみの表示のため、文字列をslice
+  const day = elements.created_at.slice(0, 10);
+  date.innerText = day;
   card.append(icon, title, name, tag, likes, date);
   ul.append(card);
 };
