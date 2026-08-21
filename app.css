@@ -38,6 +38,10 @@ h1 {
   display: center;
 }
 
+#must {
+  color: red;
+}
+
 #resultPanel {
   width: 976;
   height: 580;
@@ -55,4 +59,59 @@ h2 {
   padding-top: 18px;
   padding-left: 24px;
   margin: 0px;
+}
+
+div.resultPanel {
+  display: flex;
+  width: 976px;
+  height: 580px;
+  opacity: 1;
+  top: 232px;
+  left: 32px;
+  border-width: 1px;
+}
+
+ul {
+  flex-direction: column;
+}
+
+li {
+  list-style: none;
+  margin: 16px;
+  border: 1px solid #e0e0e0;
+}
+
+img.userIcon {
+  width: 40px;
+  height: 40px;
+  opacity: 1;
+}
+
+span.title {
+  font-family: Roboto;
+  font-weight: 700;
+  font-style: Bold;
+  font-size: 15px;
+  line-height: 100%;
+  letter-spacing: 0%;
+}
+
+span.name {
+  font-family: Roboto;
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 12px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  color: #757575;
+}
+
+span.tag {
+  font-family: Roboto;
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 11px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  color: #1976d2;
 }
