@@ -1,6 +1,14 @@
 const form = document.querySelector("#searchForm");
 let keyword = form.elements.keyword;
 
+const reset = () => {
+  keyword.value = "";
+  const ul = document.getElementById("ul");
+  if (ul !== null) {
+    ul.remove();
+  }
+};
+
 // 検索パネル
 form.addEventListener("submit", function (e) {
   e.preventDefault();
@@ -9,8 +17,8 @@ form.addEventListener("submit", function (e) {
     alert("検索キーワードを入力してください");
   } else {
     res(searchWord);
-    keyword.value = "";
-    return;
+    console.log("submit finish");
+    reset();
   }
 });
 
@@ -30,7 +38,15 @@ const res = async (keyword) => {
     const data = await response.json();
     // 検索結果に応じて分岐を作成。jsonの中身は配列の形で返ってきている。
     if (data.length !== 0) {
-      console.log("こちらがjsonの中身である検索結果一覧です", data);
+      console.log("こちらがjsonの中身である検索結果一覧です");
+      // ul要素作成
+      const ul = document.createElement("ul");
+      ul.id = "ul";
+      const resultPanel = document.querySelector("#resultPanel");
+      resultPanel.append(ul);
+      // ulの中に情報を描画する関数を、配列の各要素に処理を適用するforEachで呼び出し。
+      data.forEach(addCard);
+
       // 配列の中身がゼロ件ならば
     } else {
       alert("検索結果は0件です");
@@ -39,4 +55,30 @@ const res = async (keyword) => {
   } catch {
     alert("通信エラーが発生しました。");
   }
+};
+
+// JSONが返却された際に、その情報からアイコン、タイトル、ユーザー名、ハッシュタグ、いいね数、投稿日を抽出し、liに追加し表示。
+const addCard = (elements) => {
+  const card = document.createElement("li");
+  card.className = "card";
+  const icon = document.createElement("img");
+  const userIconUrl = elements.user.profile_image_url;
+  icon.src = `${userIconUrl}`;
+  icon.className = "userIcon";
+  const title = document.createElement("span");
+  title.innerText = `${elements.title}`;
+  const name = document.createElement("span");
+  name.innerText = `${elements.user.name}`;
+  const tag = document.createElement("span");
+  tag.innerText = `${elements.tags.name}`;
+  const likes = document.createElement("span");
+  const likesImg = document.createElement("img");
+  likesImg.src = "Vector.png";
+  likesImg.ariaLabel = "いいね数";
+  const likesValue = `${elements.likes_count}`;
+  likes.append(likesImg, likesValue);
+  const date = document.createElement("span");
+  date.innerText = `${elements.created_at}`;
+  card.append(icon, title, name, tag, likes, date);
+  ul.append(card);
 };
