@@ -1,13 +1,36 @@
 <!doctype html>
-<html lang="en">
+<html lang="ja">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="app.css" />
-    <title>Document</title>
+    <title>記事検索</title>
   </head>
+
   <body>
-    <h1>公開API検索アプリ</h1>
+    <header><h1>記事検索 (Qiita)</h1></header>
+    <div id="searchPanel"><label for="searchPanel">
+      <h2>記事を検索</h2>
+      <label for="keyword">キーワード</label> <span>必須</span><br>
+      <form id="searchForm">
+      <input type="text" id="keyword" placeholder="例) React 状態管理" aria-label="検索キーワード入力欄">
+      <button id="searchButton" aria-label="検索ボタン">検索</button>
+      </form>
+    </div>
+
+    <div id="resultPanel"> <label for="resultPanel">
+      <h2>検索結果</h2>
+      <!-- <div id="SearchResult">
+        <span>アイコン</span>
+        <span>タイトル</span>
+        <span>byユーザー名</span>
+        <span>ハッシュタグ</span>
+        <span>いいね</span>
+        <span>日付</span>
+      </div>
+      <span style="color: red;">↑このdivをクリックしたら、記事の内容を少々ポップアップしたい
+      </span> -->
+  </div>
     <script src="app.js"></script>
   </body>
 </html>
