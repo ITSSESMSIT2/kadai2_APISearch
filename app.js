@@ -36,12 +36,14 @@ const res = async (keyword) => {
     console.log("レスポンスに成功しました", response);
     // 返ってきたレスポンスからjsonを呼び出し、jsonの中身が返ってくるまで一時停止
     const data = await response.json();
+    console.log("json呼び出し成功");
     // 検索結果に応じて分岐を作成。jsonの中身は配列の形で返ってきている。
     if (data.length !== 0) {
       console.log("こちらがjsonの中身である検索結果一覧です");
       // ul要素作成
       const ul = document.createElement("ul");
       ul.id = "ul";
+      console.log("ul作成完了");
       const resultPanel = document.querySelector("#resultPanel");
       resultPanel.append(ul);
       // ulの中に情報を描画する関数を、配列の各要素に処理を適用するforEachで呼び出し。
@@ -71,6 +73,16 @@ const addCard = (elements) => {
   name.innerText = `${elements.user.name}`;
 
   const tag = document.createElement("span");
+  const tags = elements.tags
+    // 配列tagsの中から、一番目から四番目の要素を切り取って新しい配列を作成し、
+    .slice(0, 4)
+    // その配列の中身のname要素を取り出し、さらに新たな配列を作る。
+    // その際、ハッシュタグをテンプレートリテラルに添えて表記を変更する。
+    .map((tags) => "#" + `${tags.name}`)
+    // 最後に、配列の状態でまだ保持されているため文字として結合する。（「,」を消す）
+    // その際、空文字をjoin（結合）することで「,」を消すことができる。
+    .join("");
+  tag.innerText = tags;
 
   const likes = document.createElement("span");
   const likesImg = document.createElement("img");
