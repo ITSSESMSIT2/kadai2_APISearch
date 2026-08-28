@@ -81,16 +81,15 @@ const res = async (keyword) => {
         resultPanel.append(ul); // ulの中に情報を描画する関数を、配列の各要素に処理を適用するforEachで呼び出し。
         data.forEach(addCard);
         // 配列の中身がゼロ件ならば
-      } else {
+      } else if (data.length === 0) {
         searchStatus("noResult");
+      } else {
+        // 業務上ではユーザーにどう見せるかなど。分析にも利用するので、「このAPIでエラーが出ました」など。
+        throw new Error("レスポンスに失敗しました。");
+        // 確認用　console.log("レスポンス失敗");
       }
-    } else {
-      // 業務上ではユーザーにどう見せるかなど。分析にも利用するので、「このAPIでエラーが出ました」など。
-      throw new Error("レスポンスに失敗しました。");
-      // 確認用　console.log("レスポンス失敗");
     }
-    // そもそも、APIにアクセスできない場合のエラーメッセージを表示
-  } catch {
+  } catch (error) {
     console.log(error);
     searchStatus("error");
     //tryに入っても、catchに入っても共通で行う処理をfinallyに記載
