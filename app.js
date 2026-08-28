@@ -1,7 +1,7 @@
 const form = document.querySelector("#searchForm");
 let keyword = form.elements.keyword;
 const searchButton = document.querySelector("#searchButton");
-const status = document.querySelector("p");
+const showStatus = document.querySelector("#showStatus");
 let searching = false;
 
 // ステータスにあわせた表示を行うための関数を作成
@@ -9,21 +9,18 @@ const searchStatus = (state) => {
   // 読み込み中の時
   if (state === "loading") {
     searching = true;
-    status.textContent = "検索中";
-    searchButton.disabled = "true";
+    showStatus.textContent = "検索中";
+    searchButton.disabled = true;
     return;
   }
   searching = false;
-  searchButton.disable = "false";
-
+  searchButton.disable = false;
   if (state === "finish") {
-    status.textContent = "";
-  } else if ((state = "null")) {
-    status.textContent = "キーワードを入力してください";
+    showStatus.textContent = "";
   } else if (state === "noResult") {
-    status.textContent = "検索結果は0件です。";
+    showStatus.textContent = "検索結果は0件です。";
   } else if (state === "error") {
-    status.textContent = "エラーが発生しました。";
+    showStatus.textContent = "エラーが発生しました。";
   }
 };
 
@@ -35,19 +32,21 @@ const reset = () => {
   }
 };
 
-// if(=== "loading"){}
 // 検索パネル
 form.addEventListener("submit", function (e) {
   e.preventDefault();
-  searchStatus();
-  const searchWord = keyword.value.trim();
-  if (searchWord === null || searchWord === "") {
-    searchStatus("null");
-  } else {
-    res(searchWord);
-    console.log("submit finish");
-    reset();
+  if (searching) {
+    return;
   }
+  const searchWord = keyword.value.trim();
+  if (searchWord === "") {
+    alert("キーワードを入力してください");
+    return;
+  }
+  reset();
+  searchStatus("loading");
+  res(searchWord);
+  // console.log("submit finish");
 });
 
 // 結果を取得
@@ -63,7 +62,6 @@ const res = async (keyword) => {
       page: "1",
       per_page: "20",
     });
-    // 確認用　console.log("URL組み立て成功");
     // fetchがPromiseを返してくれるまで一時停止
     const response = await fetch(url);
     // レスポンスが無事戻ってきていればtrueを返す、response.ok判定を確認
@@ -71,19 +69,22 @@ const res = async (keyword) => {
       console.log("レスポンスに成功しました", response);
       // 返ってきたレスポンスからjsonを呼び出し、jsonの中身が返ってくるまで一時停止
       const data = await response.json();
+      searchStatus("finish");
       // 検索結果に応じて分岐を作成。jsonの中身は配列の形で返ってきている。
       if (data.length !== 0) {
-        console.log("こちらがjsonの中身である検索結果一覧です", data);
+        // console.log("こちらがjsonの中身である検索結果一覧です", data);
         const ul = document.createElement("ul");
         ul.id = "ul";
-        console.log("ul作成完了");
+        // console.log("ul作成完了");
         const resultPanel = document.querySelector("#resultPanel");
-        resultPanel.append(ul); // ulの中に情報を描画する関数を、配列の各要素に処理を適用するforEachで呼び出し。
+        resultPanel.append(ul);
+        // ulの中に情報を描画する関数を、配列の各要素に処理を適用するforEachで呼び出し。
         data.forEach(addCard);
         // 配列の中身がゼロ件ならば
       } else if (data.length === 0) {
         searchStatus("noResult");
       } else {
+        // res.okがfalseの場合
         // 業務上ではユーザーにどう見せるかなど。分析にも利用するので、「このAPIでエラーが出ました」など。
         throw new Error("レスポンスに失敗しました。");
         // 確認用　console.log("レスポンス失敗");
@@ -94,8 +95,8 @@ const res = async (keyword) => {
     searchStatus("error");
     //tryに入っても、catchに入っても共通で行う処理をfinallyに記載
   } finally {
-    searching = "false";
-    searchButton.disabled = "false";
+    searching = false;
+    searchButton.disabled = false;
   }
 };
 
@@ -126,7 +127,6 @@ const addCard = (elements) => {
     // その際、空文字をjoin（結合）することで「,」を消すことができる。
     .join("");
   tag.innerText = tags;
-
   const likes = document.createElement("span");
   const likesImg = document.createElement("img");
   likesImg.src = "Vector.png";
