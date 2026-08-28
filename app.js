@@ -110,8 +110,11 @@ const addCard = (elements) => {
   const title = document.createElement("span");
   title.innerText = `${elements.title}`;
   const name = document.createElement("span");
-  name.innerText = `${elements.user.name}`;
-
+  if (elements.user.name !== "") {
+    name.innerText = `${elements.user.name}`;
+  } else {
+    name.innerText = `@${elements.user.id}`;
+  }
   const tag = document.createElement("span");
   const tags = elements.tags
     // 配列tagsの中から、一番目から四番目の要素を切り取って新しい配列を作成し、
