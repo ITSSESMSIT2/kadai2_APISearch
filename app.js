@@ -106,19 +106,26 @@ const addCard = (elements) => {
   const name = document.createElement("span");
   // userのnameが存在しない場合、論理演算子の||（もしくは）を活用できる。
   // 従来の書き方では、もともとnullやundefinedの値を拾えない。
-  const nameValue = elements.user.name || `@${elements.user.id}`;
-  name.innerText = nameValue;
   // if (elements.user.name !== "") {
   //   name.innerText = `${elements.user.name}`;
   // } else {
   //   name.innerText = `@${elements.user.id}`;
   // }
+  const nameValue = elements.user.name || `@${elements.user.id}`;
+  name.innerText = nameValue;
+  // 画像
+  const imgDiv = document.createElement("div");
+  imgDiv.className = "imgDiv";
   const icon = document.createElement("img");
+  icon.id = "icon";
   const userIconUrl = elements.user.profile_image_url;
   icon.src = `${userIconUrl}`;
-  icon.className = "userIcon";
+  // altは「ユーザー名（ユーザーid）のアイコン」と指定
   icon.alt = `${nameValue}のアイコン`;
+  imgDiv.append(icon);
+  // タグ
   const tag = document.createElement("span");
+  tag.id = "tag";
   const tags = elements.tags
     // 配列tagsの中から、一番目から四番目の要素を切り取って新しい配列を作成し、
     .slice(0, 4)
@@ -129,17 +136,29 @@ const addCard = (elements) => {
     // その際、空文字をjoin（結合）することで「,」を消すことができる。
     .join("");
   tag.innerText = tags;
+  // 画像のすぐ隣に配置するdivを用意し、タイトル・ユーザー名・タグを格納
+  const leftItem = document.createElement("div");
+  leftItem.className = "leftItem";
+  leftItem.append(title, name, tag);
+  // いいね
   const likes = document.createElement("span");
+  likes.id = "likes";
   const likesImg = document.createElement("img");
   likesImg.src = "Vector.png";
-  likesImg.ariaLabel = "いいね数";
+  likesImg.alt = "@いいね数";
   const likesValue = `${elements.likes_count}`;
+  // 投稿日
   likes.append(likesImg, likesValue);
   const date = document.createElement("span");
+  date.id = "date";
   // 年月日のみの表示のため、文字列をslice
   const day = elements.created_at.slice(0, 10);
   date.innerText = day;
-  card.append(icon, title, name, tag, likes, date);
-  const ul = document.getElementById("ul");
+  // カードの右端に表示するためのdivを用意し、いいねと投稿日を格納
+  const rightItem = document.createElement("div");
+  rightItem.id = "rigitItem";
+  rightItem.append(likes, date);
+  // カードに画像、左に配置する要素、右に配置する要素を加える
+  card.append(imgDiv, leftItem, rightItem);
   ul.append(card);
 };
