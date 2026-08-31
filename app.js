@@ -43,62 +43,72 @@ form.addEventListener("submit", function (e) {
   }
   reset();
   searchStatus("loading");
-  res(searchWord);
+  handleSearch(searchWord);
   // console.log("submit finish");
 });
 
-// 結果を取得
-// データを取得する際の処理を一時停止させておきたいので、async関数を利用。
-const res = async (keyword) => {
-  // tryとthenでは意味が重複するので、今回は仕様書よりtryを利用
+// resに持たせた三種類の処理を分離させる。まず、検索のみを行うfetchItems関数を作成。
+const fetchItems = async (keyword) => {
+  // このまま入力値を受け取ってしまうと、悪意ある入力を適用してしまう危険や、そもそも正確に調べることができなくなる。
+  const url = new URL("https://qiita.com/api/v2/items");
+  url.search = new URLSearchParams({
+    query: keyword,
+    page: "1",
+    per_page: "20",
+  });
+  // fetchがPromiseを返してくれるまで一時停止
+  const response = await fetch(url);
+  // レスポンスが無事戻ってきていればtrueを返す、response.ok判定を確認
+  if (!response.ok) {
+    throw new Error(`HTTP error: ${response.status}`);
+  }
+  // 返ってきたレスポンスからjsonを呼び出し、jsonの中身が返ってくるまで一時停止
+  return await response.json();
+};
+
+// 続いて、検索結果を画面に表示するrenderItems関数を作成
+const renderItems = (items) => {
+  const ul = document.createElement("ul");
+  ul.id = "ul";
+  // console.log("ul作成完了");
+  // const resultPanel = document.querySelector("#resultPanel");
+  // resultPanel.append(ul);
+  // 今制作したul要素と、itemsの中に入った情報をセットにしてaddCardメソッドの中に入れる
+  // →addCardメソッドの中で、ulをgetElemetByIdしなくとも取得できるようになる。
+  // itemはitems配列の中の一つ一つの要素を指す(items自体は、取得したjsonの要素)
+  items.forEach((item) => addCard(item, ul));
+  document.querySelector("#resultPanel").append(ul);
+};
+
+// 上記二種類の関数を利用し、状態変化を設定する。（// 1回の検索について、状態変更・取得・描画の順序を管理する）
+const handleSearch = async (searchWord) => {
   try {
-    // このまま入力値を受け取ってしまうと、悪意ある入力を適用してしまう危険や、そもそも正確に調べることができなくなる。
-    // 確認用　console.log("tryの中には入った");
-    const url = new URL("https://qiita.com/api/v2/items");
-    url.search = new URLSearchParams({
-      query: keyword,
-      page: "1",
-      per_page: "20",
-    });
-    // fetchがPromiseを返してくれるまで一時停止
-    const response = await fetch(url);
-    // response.ok !== trueだった場合の処理を書いておくことで、response.ok === trueの大きなif文に入れなくて済む。
-    if (!response.ok) {
-      // 業務上ではユーザーにどう見せるかなど。分析にも利用するので、「このAPIでエラーが出ました」など。
-      // throw new Error("レスポンスに失敗しました。");
-      // .statusをつけることで、具体的にどのようなエラーが発生したのか改修することができる。
-      throw new Error(`HTTP error: ${response.status}`);
-    }
-    console.log("レスポンスに成功しました", response);
-    // 返ってきたレスポンスからjsonを呼び出し、jsonの中身が返ってくるまで一時停止
-    const data = await response.json();
-    searchStatus("finish");
-    // 検索結果に応じて分岐を作成。jsonの中身は配列の形で返ってきている。
-    if (data.length !== 0) {
-      // console.log("こちらがjsonの中身である検索結果一覧です", data);
-      const ul = document.createElement("ul");
-      ul.id = "ul";
-      // console.log("ul作成完了");
-      const resultPanel = document.querySelector("#resultPanel");
-      resultPanel.append(ul);
-      // ulの中に情報を描画する関数を、配列の各要素に処理を適用するforEachで呼び出し。
-      data.forEach(addCard);
-      // 配列の中身がゼロ件ならば
-    } else if (data.length === 0) {
+    //検索開始
+    searchStatus("loading");
+    const items = await fetchItems(searchWord);
+    // 検索結果が0件の場合、0件であることを明示し処理を終了（＝if文を書かなくてよい）
+    if (items.length === 0) {
       searchStatus("noResult");
+      return;
     }
+    // 記事がある場合、renderItemsを利用し画面に描画
+    renderItems(items);
+    // 検索状態を完了（＝文字入力フォーム初期化）
+    searchStatus("finish");
   } catch (error) {
     console.log(error);
     searchStatus("error");
-    //tryに入っても、catchに入っても共通で行う処理をfinallyに記載
   } finally {
     searching = false;
     searchButton.disabled = false;
   }
 };
 
+// 業務上ではユーザーにどう見せるかなど。分析にも利用するので、「このAPIでエラーが出ました」など。
+// throw new Error("レスポンスに失敗しました。");
+// 確認用　console.log("レスポンス失敗");
 // JSONが返却された際に、その情報からアイコン、タイトル、ユーザー名、ハッシュタグ、いいね数、投稿日を抽出し、liに追加し表示。
-const addCard = (elements) => {
+const addCard = (elements, ul) => {
   const card = document.createElement("li");
   card.className = "card";
   const title = document.createElement("span");
