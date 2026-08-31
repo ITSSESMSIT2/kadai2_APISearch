@@ -9,18 +9,16 @@ const searchStatus = (state) => {
   // 読み込み中の時
   if (state === "loading") {
     searching = true;
-    showStatus.textContent = "検索中";
     searchButton.disabled = true;
+    showStatus.textContent = "検索中";
     return;
   }
-  searching = false;
-  searchButton.disable = false;
   if (state === "finish") {
     showStatus.textContent = "";
   } else if (state === "noResult") {
     showStatus.textContent = "検索結果は0件です。";
   } else if (state === "error") {
-    showStatus.textContent = "エラーが発生しました。";
+    showStatus.textContent = "接続エラーが発生しました。";
   }
 };
 
@@ -64,31 +62,30 @@ const res = async (keyword) => {
     });
     // fetchがPromiseを返してくれるまで一時停止
     const response = await fetch(url);
-    // レスポンスが無事戻ってきていればtrueを返す、response.ok判定を確認
-    if (response.ok === true) {
-      console.log("レスポンスに成功しました", response);
-      // 返ってきたレスポンスからjsonを呼び出し、jsonの中身が返ってくるまで一時停止
-      const data = await response.json();
-      searchStatus("finish");
-      // 検索結果に応じて分岐を作成。jsonの中身は配列の形で返ってきている。
-      if (data.length !== 0) {
-        // console.log("こちらがjsonの中身である検索結果一覧です", data);
-        const ul = document.createElement("ul");
-        ul.id = "ul";
-        // console.log("ul作成完了");
-        const resultPanel = document.querySelector("#resultPanel");
-        resultPanel.append(ul);
-        // ulの中に情報を描画する関数を、配列の各要素に処理を適用するforEachで呼び出し。
-        data.forEach(addCard);
-        // 配列の中身がゼロ件ならば
-      } else if (data.length === 0) {
-        searchStatus("noResult");
-      } else {
-        // res.okがfalseの場合
-        // 業務上ではユーザーにどう見せるかなど。分析にも利用するので、「このAPIでエラーが出ました」など。
-        throw new Error("レスポンスに失敗しました。");
-        // 確認用　console.log("レスポンス失敗");
-      }
+    // response.ok !== trueだった場合の処理を書いておくことで、response.ok === trueの大きなif文に入れなくて済む。
+    if (!response.ok) {
+      // 業務上ではユーザーにどう見せるかなど。分析にも利用するので、「このAPIでエラーが出ました」など。
+      // throw new Error("レスポンスに失敗しました。");
+      // .statusをつけることで、具体的にどのようなエラーが発生したのか改修することができる。
+      throw new Error(`HTTP error: ${response.status}`);
+    }
+    console.log("レスポンスに成功しました", response);
+    // 返ってきたレスポンスからjsonを呼び出し、jsonの中身が返ってくるまで一時停止
+    const data = await response.json();
+    searchStatus("finish");
+    // 検索結果に応じて分岐を作成。jsonの中身は配列の形で返ってきている。
+    if (data.length !== 0) {
+      // console.log("こちらがjsonの中身である検索結果一覧です", data);
+      const ul = document.createElement("ul");
+      ul.id = "ul";
+      // console.log("ul作成完了");
+      const resultPanel = document.querySelector("#resultPanel");
+      resultPanel.append(ul);
+      // ulの中に情報を描画する関数を、配列の各要素に処理を適用するforEachで呼び出し。
+      data.forEach(addCard);
+      // 配列の中身がゼロ件ならば
+    } else if (data.length === 0) {
+      searchStatus("noResult");
     }
   } catch (error) {
     console.log(error);
@@ -104,18 +101,23 @@ const res = async (keyword) => {
 const addCard = (elements) => {
   const card = document.createElement("li");
   card.className = "card";
+  const title = document.createElement("span");
+  title.innerText = `${elements.title}`;
+  const name = document.createElement("span");
+  // userのnameが存在しない場合、関係演算子の||（もしくは）を活用できる。
+  // 従来の書き方では、もともとnullやundefinedの値を拾えない。
+  const nameValue = elements.user.name || `@${elements.user.id}`;
+  name.innerText = nameValue;
+  // if (elements.user.name !== "") {
+  //   name.innerText = `${elements.user.name}`;
+  // } else {
+  //   name.innerText = `@${elements.user.id}`;
+  // }
   const icon = document.createElement("img");
   const userIconUrl = elements.user.profile_image_url;
   icon.src = `${userIconUrl}`;
   icon.className = "userIcon";
-  const title = document.createElement("span");
-  title.innerText = `${elements.title}`;
-  const name = document.createElement("span");
-  if (elements.user.name !== "") {
-    name.innerText = `${elements.user.name}`;
-  } else {
-    name.innerText = `@${elements.user.id}`;
-  }
+  icon.alt = `${nameValue}のアイコン`;
   const tag = document.createElement("span");
   const tags = elements.tags
     // 配列tagsの中から、一番目から四番目の要素を切り取って新しい配列を作成し、
@@ -138,5 +140,6 @@ const addCard = (elements) => {
   const day = elements.created_at.slice(0, 10);
   date.innerText = day;
   card.append(icon, title, name, tag, likes, date);
+  const ul = document.getElementById("ul");
   ul.append(card);
 };
