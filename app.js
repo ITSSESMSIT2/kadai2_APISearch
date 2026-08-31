@@ -104,7 +104,7 @@ const addCard = (elements) => {
   const title = document.createElement("span");
   title.innerText = `${elements.title}`;
   const name = document.createElement("span");
-  // userのnameが存在しない場合、関係演算子の||（もしくは）を活用できる。
+  // userのnameが存在しない場合、論理演算子の||（もしくは）を活用できる。
   // 従来の書き方では、もともとnullやundefinedの値を拾えない。
   const nameValue = elements.user.name || `@${elements.user.id}`;
   name.innerText = nameValue;
