@@ -9,28 +9,29 @@
 
   <body>
     <header><h1>記事検索 (Qiita)</h1></header>
-    <div id="searchPanel">
-      <label for="keyword"> <h2>記事を検索</h2> </label>
-      <span id="explain">
-        キーワード
-      <span id="must">必須</span>
-      </span>
-      <form id="searchForm">
-        <input
-          type="text"
-          id="keyword"
-          placeholder="例）React 状態管理"
-          aria-label="検索キーワード入力欄"
-        />
-        <button id="searchButton" aria-label="検索ボタン">検索</button>
-      </form>
-    </div>
+    <main>
+      <div id="searchPanel">
+        <label for="keyword"> <h2>記事を検索</h2> </label>
+        <span id="explain">
+          キーワード
+          <span id="must">必須</span>
+        </span>
+        <form id="searchForm">
+          <input
+            type="text"
+            id="keyword"
+            placeholder="例）React 状態管理"
+            aria-label="検索キーワード入力欄"
+          />
+          <button id="searchButton" aria-label="検索ボタン">検索</button>
+        </form>
+      </div>
 
-    <div id="resultPanel">
-      <h2>検索結果</h2>
-      <p aria-live="polite" id="showStatus"></p>
-      <!-- <ul id="showResult"></ul> -->
-      <!-- <div id="SearchResult">
+      <div id="resultPanel">
+        <h2>検索結果</h2>
+        <p aria-live="polite" id="showStatus"></p>
+        <!-- <ul id="showResult"></ul> -->
+        <!-- <div id="SearchResult">
         <span>アイコン</span>
         <span>タイトル</span>
         <span>byユーザー名</span>
@@ -41,7 +42,7 @@
       <span style="color: red;">↑このdivをクリックしたら、記事の内容を少々ポップアップしたい
       </span> -->
       </div>
-    </div>
+    </main>
     <script src="app.js"></script>
   </body>
 </html>

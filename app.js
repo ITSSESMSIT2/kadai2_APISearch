@@ -41,8 +41,9 @@ form.addEventListener("submit", function (e) {
     alert("キーワードを入力してください");
     return;
   }
+  // 前回の入力値を取り消し、検索結果も一掃する。
   reset();
-  searchStatus("loading");
+  // 状態変化に合わせて検索と描画を行う、handleSearchを呼び出し
   handleSearch(searchWord);
   // console.log("submit finish");
 });
@@ -76,7 +77,7 @@ const renderItems = (items) => {
   // 今制作したul要素と、itemsの中に入った情報をセットにしてaddCardメソッドの中に入れる
   // →addCardメソッドの中で、ulをgetElemetByIdしなくとも取得できるようになる。
   // itemはitems配列の中の一つ一つの要素を指す(items自体は、取得したjsonの要素)
-  items.forEach((item) => addCard(item, ul));
+  items.forEach((elements) => addCard(elements, ul));
   document.querySelector("#resultPanel").append(ul);
 };
 
@@ -141,7 +142,7 @@ const addCard = (elements, ul) => {
     .slice(0, 4)
     // その配列の中身のname要素を取り出し、さらに新たな配列を作る。
     // その際、ハッシュタグをテンプレートリテラルに添えて表記を変更する。
-    .map((tags) => "#" + `${tags.name}`)
+    .map((tags) => "#" + `${tags.name} `)
     // 最後に、配列の状態でまだ保持されているため文字として結合する。（「,」を消す）
     // その際、空文字をjoin（結合）することで「,」を消すことができる。
     .join("");
@@ -166,7 +167,7 @@ const addCard = (elements, ul) => {
   date.innerText = day;
   // カードの右端に表示するためのdivを用意し、いいねと投稿日を格納
   const rightItem = document.createElement("div");
-  rightItem.id = "rigitItem";
+  rightItem.className = "rightItem";
   rightItem.append(likes, date);
   // カードに画像、左に配置する要素、右に配置する要素を加える
   card.append(imgDiv, leftItem, rightItem);
