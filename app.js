@@ -13,15 +13,19 @@ const searchStatus = (state) => {
     showStatus.textContent = "検索中";
     return;
   }
+  // 完了
   if (state === "finish") {
     showStatus.textContent = "";
+    // 検索結果0件
   } else if (state === "noResult") {
     showStatus.textContent = "検索結果は0件です。";
+    // 接続エラー
   } else if (state === "error") {
     showStatus.textContent = "接続エラーが発生しました。";
   }
 };
 
+// 検索の入力値と結果の画面表示を初期化
 const reset = () => {
   keyword.value = "";
   const ul = document.getElementById("ul");
@@ -47,7 +51,6 @@ form.addEventListener("submit", function (e) {
   reset();
   // 状態変化に合わせて検索と描画を行う、handleSearchを呼び出し
   handleSearch(searchWord);
-  // 確認用　console.log("submit finish");
 });
 
 // resに持たせた三種類の処理を分離させる。まず、検索のみを行うfetchItems関数を作成。
@@ -60,8 +63,7 @@ const fetchItems = async (keyword) => {
   });
   // fetchがPromiseを返すまで一時停止
   const response = await fetch(url);
-  // レスポンスが無事戻ってきていればtrueを返す、response.ok判定を利用。
-  // レスポンスが戻らなかった場合、エラーを投げる。
+  // response.ok判定を利用し、レスポンスが戻らなかった場合、エラーを投げる。
   if (!response.ok) {
     throw new Error(`HTTP error: ${response.status}`);
   }
@@ -73,9 +75,7 @@ const fetchItems = async (keyword) => {
 const renderItems = (items) => {
   const ul = document.createElement("ul");
   ul.id = "ul";
-  // 今制作したul要素と、itemsの中に入った情報をセットにしてaddCardメソッドの中に入れる
-  // →addCardメソッドの中で、ulをgetElemetByIdしなくとも取得できるようになる。
-  // itemはitems配列の中の一つ一つの要素を指す(items自体は、取得したjsonの要素)
+  // 今制作したul要素と、itemsの中に入った情報をセットにしてaddCardメソッドに適用
   items.forEach((item) => addCard(item, ul));
   document.querySelector("#resultPanel").append(ul);
 };
@@ -93,8 +93,9 @@ const handleSearch = async (searchWord) => {
     }
     // 記事がある場合、renderItemsを利用し画面に描画
     renderItems(items);
-    // 検索状態を完了（＝文字入力フォーム初期化）
+    // 検索状態を完了（＝画面表示初期化）
     searchStatus("finish");
+    // エラー発生時
   } catch (error) {
     console.log(error);
     searchStatus("error");
@@ -111,32 +112,27 @@ const addCard = (item, ul) => {
   card.className = "card";
   // 記事タイトル
   const title = document.createElement("span");
-  title.id = "title";
+  title.className = "title";
   title.innerText = `${item.title}`;
   // ユーザー名（未登録の場合、ユーザーid）
   const name = document.createElement("span");
-  name.id = "name";
+  name.className = "name";
   // userのnameが存在しない場合、論理演算子の||（もしくは）を活用できる。
   const nameValue = item.user.name || `@${item.user.id}`;
   name.innerText = nameValue;
   // 画像
   const icon = document.createElement("img");
-  icon.id = "icon";
+  icon.className = "icon";
   const userIconUrl = item.user.profile_image_url;
   icon.src = `${userIconUrl}`;
   // altは「ユーザー名（ユーザーid）のアイコン」と指定
   icon.alt = `${nameValue}のアイコン`;
   // タグ
   const tag = document.createElement("span");
-  tag.id = "tag";
+  tag.className = "tag";
   const tags = item.tags
-    // 配列tagsの中から、一番目から四番目の要素を切り取って新しい配列を作成し、
     .slice(0, 4)
-    // その配列の中身のname要素を取り出し、さらに新たな配列を作る。
-    // その際、ハッシュタグをテンプレートリテラルに添えて表記を変更する。
     .map((tags) => "#" + `${tags.name} `)
-    // 最後に、配列の状態でまだ保持されているため文字として結合する。（「,」を消す）
-    // その際、空文字をjoin（結合）することで「,」を消すことができる。
     .join("");
   tag.innerText = tags;
   // 画像のすぐ隣に配置するdivを用意し、タイトル・ユーザー名・タグを格納
@@ -145,7 +141,7 @@ const addCard = (item, ul) => {
   leftItem.append(title, name, tag);
   // いいね
   const likes = document.createElement("span");
-  likes.id = "likes";
+  likes.className = "likes";
   const likesImg = document.createElement("img");
   likesImg.src = "Vector.png";
   likesImg.alt = "@いいね数";
@@ -153,7 +149,7 @@ const addCard = (item, ul) => {
   // 投稿日
   likes.append(likesImg, likesValue);
   const date = document.createElement("span");
-  date.id = "date";
+  date.className = "date";
   // 年月日のみの表示のため、文字列をslice
   const day = item.created_at.slice(0, 10);
   date.innerText = day;
