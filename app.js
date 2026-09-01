@@ -33,9 +33,11 @@ const reset = () => {
 // 検索パネル
 form.addEventListener("submit", function (e) {
   e.preventDefault();
+  // 検索中なら処理を行わず返す
   if (searching) {
     return;
   }
+  // 入力値を正確にクエリに渡すため、文字列の空白を削除
   const searchWord = keyword.value.trim();
   if (searchWord === "") {
     alert("キーワードを入力してください");
@@ -45,21 +47,21 @@ form.addEventListener("submit", function (e) {
   reset();
   // 状態変化に合わせて検索と描画を行う、handleSearchを呼び出し
   handleSearch(searchWord);
-  // console.log("submit finish");
+  // 確認用　console.log("submit finish");
 });
 
 // resに持たせた三種類の処理を分離させる。まず、検索のみを行うfetchItems関数を作成。
 const fetchItems = async (keyword) => {
-  // このまま入力値を受け取ってしまうと、悪意ある入力を適用してしまう危険や、そもそも正確に調べることができなくなる。
   const url = new URL("https://qiita.com/api/v2/items");
   url.search = new URLSearchParams({
     query: keyword,
     page: "1",
     per_page: "20",
   });
-  // fetchがPromiseを返してくれるまで一時停止
+  // fetchがPromiseを返すまで一時停止
   const response = await fetch(url);
-  // レスポンスが無事戻ってきていればtrueを返す、response.ok判定を確認
+  // レスポンスが無事戻ってきていればtrueを返す、response.ok判定を利用。
+  // レスポンスが戻らなかった場合、エラーを投げる。
   if (!response.ok) {
     throw new Error(`HTTP error: ${response.status}`);
   }
@@ -71,13 +73,10 @@ const fetchItems = async (keyword) => {
 const renderItems = (items) => {
   const ul = document.createElement("ul");
   ul.id = "ul";
-  // console.log("ul作成完了");
-  // const resultPanel = document.querySelector("#resultPanel");
-  // resultPanel.append(ul);
   // 今制作したul要素と、itemsの中に入った情報をセットにしてaddCardメソッドの中に入れる
   // →addCardメソッドの中で、ulをgetElemetByIdしなくとも取得できるようになる。
   // itemはitems配列の中の一つ一つの要素を指す(items自体は、取得したjsonの要素)
-  items.forEach((elements) => addCard(elements, ul));
+  items.forEach((item) => addCard(item, ul));
   document.querySelector("#resultPanel").append(ul);
 };
 
@@ -99,45 +98,38 @@ const handleSearch = async (searchWord) => {
   } catch (error) {
     console.log(error);
     searchStatus("error");
+    // 検索が成功しても失敗しても、検索を再度有効にする
   } finally {
     searching = false;
     searchButton.disabled = false;
   }
 };
 
-// 業務上ではユーザーにどう見せるかなど。分析にも利用するので、「このAPIでエラーが出ました」など。
-// throw new Error("レスポンスに失敗しました。");
-// 確認用　console.log("レスポンス失敗");
-// JSONが返却された際に、その情報からアイコン、タイトル、ユーザー名、ハッシュタグ、いいね数、投稿日を抽出し、liに追加し表示。
-const addCard = (elements, ul) => {
+// JSONが返却された際に、その情報から画面に表示するものを抽出し、liに追加。
+const addCard = (item, ul) => {
   const card = document.createElement("li");
   card.className = "card";
+  // 記事タイトル
   const title = document.createElement("span");
-  title.innerText = `${elements.title}`;
+  title.id = "title";
+  title.innerText = `${item.title}`;
+  // ユーザー名（未登録の場合、ユーザーid）
   const name = document.createElement("span");
+  name.id = "name";
   // userのnameが存在しない場合、論理演算子の||（もしくは）を活用できる。
-  // 従来の書き方では、もともとnullやundefinedの値を拾えない。
-  // if (elements.user.name !== "") {
-  //   name.innerText = `${elements.user.name}`;
-  // } else {
-  //   name.innerText = `@${elements.user.id}`;
-  // }
-  const nameValue = elements.user.name || `@${elements.user.id}`;
+  const nameValue = item.user.name || `@${item.user.id}`;
   name.innerText = nameValue;
   // 画像
-  const imgDiv = document.createElement("div");
-  imgDiv.className = "imgDiv";
   const icon = document.createElement("img");
   icon.id = "icon";
-  const userIconUrl = elements.user.profile_image_url;
+  const userIconUrl = item.user.profile_image_url;
   icon.src = `${userIconUrl}`;
   // altは「ユーザー名（ユーザーid）のアイコン」と指定
   icon.alt = `${nameValue}のアイコン`;
-  imgDiv.append(icon);
   // タグ
   const tag = document.createElement("span");
   tag.id = "tag";
-  const tags = elements.tags
+  const tags = item.tags
     // 配列tagsの中から、一番目から四番目の要素を切り取って新しい配列を作成し、
     .slice(0, 4)
     // その配列の中身のname要素を取り出し、さらに新たな配列を作る。
@@ -157,19 +149,19 @@ const addCard = (elements, ul) => {
   const likesImg = document.createElement("img");
   likesImg.src = "Vector.png";
   likesImg.alt = "@いいね数";
-  const likesValue = `${elements.likes_count}`;
+  const likesValue = `${item.likes_count}`;
   // 投稿日
   likes.append(likesImg, likesValue);
   const date = document.createElement("span");
   date.id = "date";
   // 年月日のみの表示のため、文字列をslice
-  const day = elements.created_at.slice(0, 10);
+  const day = item.created_at.slice(0, 10);
   date.innerText = day;
   // カードの右端に表示するためのdivを用意し、いいねと投稿日を格納
   const rightItem = document.createElement("div");
   rightItem.className = "rightItem";
   rightItem.append(likes, date);
   // カードに画像、左に配置する要素、右に配置する要素を加える
-  card.append(imgDiv, leftItem, rightItem);
+  card.append(icon, leftItem, rightItem);
   ul.append(card);
 };
